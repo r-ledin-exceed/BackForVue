@@ -68,26 +68,22 @@ exports.updMarker = async (req, res) => {
 }
 
 exports.removeMarker = async (req, res) => {
-
-
     const { marker, id } = req.params
     const currentUser = await User.findById(id)
 
-    currentUser.items.forEach((index, item) => {
-        console.log(index,item)
+    currentUser.items.forEach((item, index) => {
         if (marker == item._id) {
-            console.log(items)
             currentUser.items.splice(index, 1)
-           
         }
     });
+
+    await currentUser.save()
+
     return res.status(200).send({
         response: "deleted succesfully",
     })
-}
-  
     
-
+}
 
 exports.allMarkers = async (req, res) => {
     const id = req.params.id
