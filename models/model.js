@@ -12,7 +12,8 @@ let User = new Schema({
         url: {type: String},
     }]
     
-});
+    },
+{ versionKey: false });
 
 // Export the model
-module.exports = mongoose.model('Users', User);
+module.exports = mongoose.model('User', User);
