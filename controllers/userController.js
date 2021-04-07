@@ -34,9 +34,8 @@ exports.addMarker = async (req, res) => {
 
 exports.updMarker = async (req, res) => {
     const { coords, name } = req.body.items
-    const id = req.params.id
+    const { marker, id } = req.params
     const currentUser = await User.findById(id)
-    console.log(currentUser)
 
     if (!(coords) || !(name)) {
         return res.status(400).send({
@@ -52,7 +51,16 @@ exports.updMarker = async (req, res) => {
             message: "enter correct coords"
         })
     }
-    
+
+    currentUser.items.forEach(item => {
+        if (marker == item._id) {
+            item.coords = coords
+            item.name = name
+        }
+    });
+
+    await currentUser.save()
+
     return res.status(200).send({
         response: "ok",
         items: {coords, name}
@@ -60,11 +68,26 @@ exports.updMarker = async (req, res) => {
 }
 
 exports.removeMarker = async (req, res) => {
-    const { coords, name } = req.body.items
-    const id = req.params.id
+
+
+    const { marker, id } = req.params
     const currentUser = await User.findById(id)
 
+    currentUser.items.forEach((index, item) => {
+        console.log(index,item)
+        if (marker == item._id) {
+            console.log(items)
+            currentUser.items.splice(index, 1)
+           
+        }
+    });
+    return res.status(200).send({
+        response: "deleted succesfully",
+    })
 }
+  
+    
+
 
 exports.allMarkers = async (req, res) => {
     const id = req.params.id
