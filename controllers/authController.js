@@ -1,14 +1,13 @@
 const User = require('../models/model');
 const mongoose = require('mongoose');
 
-//Simple version, without validation or sanitation
 exports.test = (req, res) => {
     res.send('Greetings from the Test controller!');
 };
 
 exports.login = async (req, res) => {
     const { email, password } = req.body
-
+    
     if (!(email) || !(password)) {
         return res.status(400).send({
             response: "error",
@@ -41,7 +40,6 @@ exports.registration = async (req, res) => {
         })
     }
 
-    // Надо обратиться к коллекции mongoose и посмотреть, не существует ли такой же юзер? findone(email?)
     const checkEmail = await User.findOne({email})
 
     if (checkEmail) {

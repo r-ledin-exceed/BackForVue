@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/userController')
 
-router.post('/addMarker', controller.addMarker);
-router.put('/:id/updMarker', controller.updMarker);
+router.post('/:id/addMarker', controller.addMarker);
+router.put('/:id/:marker/updMarker', controller.updMarker);
 router.delete('/:id/removeMarker', controller.removeMarker);
 router.get('/:id/allMarkers', controller.allMarkers)
 
