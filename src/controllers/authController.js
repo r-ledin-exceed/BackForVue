@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const uuid = require('uuid');
 
-const User = mongoose.model('users');
+const User = mongoose.model('user');
 
 // test
 exports.test = (req, res) => {
@@ -44,24 +44,24 @@ exports.registration = async (req, res) => {
   const { email, password } = req.body;
   const userToken = uuid.v4();
 
-  // Checking is already exist?
-  const checkEmail = await User.findOne({ email });
-  if (checkEmail) {
-    return res.status(400).send({
-      response: 'error',
-      message: 'user already exist',
-    });
-  }
-
-  const user = new User({
-    email,
-    password,
-  });
-
-  await user.save((err) => {
-    if (err) {
-      throw new Error('Unknown problem');
+  try {
+    // Checking is already exist?
+    const checkEmail = await User.findOne({ email });
+    if (checkEmail) {
+      return res.status(400).send({
+        response: 'error',
+        message: 'user already exist',
+      });
     }
-  });
-  return res.status(200).send('user saved');
+
+    const newUser = new User({
+      email,
+      password,
+      userToken,
+    });
+    await newUser.save();
+    return res.status(200).send({ data: { userToken } });
+  } catch (err) {
+    return res.status(500).send({ response: 'error', code: 0, message: err.message });
+  }
 };
