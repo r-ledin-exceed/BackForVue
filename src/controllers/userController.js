@@ -1,5 +1,8 @@
 /* eslint-disable no-underscore-dangle */
-const User = require('../models/model');
+const mongoose = require('mongoose');
+// const uuid = require('uuid');
+
+const User = mongoose.model('users');
 
 exports.addMarker = async (req, res) => {
   const { coords, name } = req.body.items;
