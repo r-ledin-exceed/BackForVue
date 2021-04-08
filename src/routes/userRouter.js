@@ -3,13 +3,12 @@ const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
 
 const validator = require('../middleware/validation');
-const checkRegisterForm = require('../helpers/checkRegisterForm');
 
 const router = express.Router();
 
 router.get('/test', authController.test);
-router.post('/login', validator.loginUser,
-  checkRegisterForm,
+router.post('/login',
+  validator.loginUser,
   authController.login);
 router.post('/registration', authController.registration);
 
