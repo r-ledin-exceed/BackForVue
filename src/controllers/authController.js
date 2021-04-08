@@ -59,9 +59,10 @@ exports.registration = async (req, res) => {
       password,
       userToken,
     });
+
     await newUser.save();
     return res.status(200).send({ data: { userToken } });
   } catch (err) {
-    return res.status(500).send({ response: 'error', code: 0, message: err.message });
+    return res.status(500).send({ response: 'error', code: 0, message: '??????' });
   }
 };
