@@ -26,7 +26,7 @@ user.plugin(formatPlugin);
 
 user.methods.encryptPassword = (password) => crypto.createHmac('sha1', this.salt).update(password).digest('hex');
 
-user.virtual('password')
+user.virtual('tokenPassword')
   .set((password) => {
     if (!password) {
       this.salt = null;

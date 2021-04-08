@@ -7,7 +7,7 @@ const ENV = process.env.NODE_ENV;
 
 module.exports = async function (app) {
   mongoose.Promise = global.Promise;
-  if (ENV === 'development') {
+  if (ENV === 'local') {
     mongoose.connect(mongoDB, {
       useNewUrlParser: true,
       useUnifiedTopology: true,

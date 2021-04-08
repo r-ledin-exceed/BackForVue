@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 // const uuid = require('uuid');
 
-const User = mongoose.model('users');
+const User = mongoose.model('user');
 
 exports.addMarker = async (req, res) => {
   const { coords, name } = req.body.items;
