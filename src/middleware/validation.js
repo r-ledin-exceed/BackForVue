@@ -15,32 +15,18 @@ const test = async (body, res, next, rule) => {
 };
 
 const addNewUser = async (req, res, next) => {
-  let validationRule = {
-    deviceToken: 'required',
-    name: 'required',
-    registeredFrom: 'required',
+  const validationRule = {
+    email: 'required',
+    password: 'required',
   };
-  if (req.body.registeredFrom !== 'apple') {
-    validationRule = {
-      ...validationRule,
-      email: 'required|email',
-    };
-  }
   test(req.body, res, next, null, validationRule);
 };
 
 const loginUser = async (req, res, next) => {
-  const { registeredFrom } = req.body;
-  let validationRule = {
-    registeredFrom: 'required',
-    timeZone: 'required',
+  const validationRule = {
+    email: 'required',
+    password: 'required',
   };
-  if (registeredFrom === 'self') {
-    validationRule = {
-      ...validationRule,
-      password: 'required',
-    };
-  }
   test(req.body, res, next, null, validationRule);
 };
 
