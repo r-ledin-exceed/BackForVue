@@ -18,17 +18,16 @@ exports.registration = async (req, res) => {
 
   try {
     // const decoded = jwt.verify(userTokenJWT, 'shhhhh');
-
     // Checking is already exist in that game?
     const currentUser = await User.findOne({ deviceId });
     if (currentUser) {
       switch (gameId) {
         case 'domino':
-          break;
+          return 'gameDomino';
         case 'cards':
-          break;
+          return 'gameCards';
         case 'chess':
-          break;
+          return 'gameChess';
         default:
           return res.status(400).send({
             response: 'error',
@@ -64,12 +63,11 @@ exports.registration = async (req, res) => {
       deviceId,
       geoloc,
       userTokenJWT,
-      clientApps: [{ gameId, playerId, nickname }],
     });
     await newUser.save();
 
     const newClientApps = new ClientsApps({
-      clientApps: [{ gameId, playerId, nickname }],
+      gameId, playerId,
       // userId     // nado navesit'
     });
     await newClientApps.save();

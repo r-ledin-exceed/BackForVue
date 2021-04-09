@@ -5,13 +5,13 @@ const { Schema } = mongoose;
 const GameCards = new Schema({
   gameId: { type: String, required: true },
   playerId: { type: String, required: true },
-  // nickname: { type: String, required: true },
+  nickname: { type: String, required: true },
   lvl: { type: Number, default: 0 },
   balance: { type: Number, default: 0 },
   isOnline: { type: Boolean, default: false },
-  // gameProfilePhotoUrl: { type: String, default: null },
+  gameProfilePhotoUrl: { type: String, default: null },
   version: { type: String },
-
+  userTokenJWT: { type: String },
 },
 { collection: 'gameCards' },
 { versionKey: false });
