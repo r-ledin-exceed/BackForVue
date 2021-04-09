@@ -1,4 +1,4 @@
-const user = require('./users');
+const user = require('./globalUser');
 
 module.exports = {
   user,
