@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const uuid = require('uuid');
+const { user } = require('../models');
 
 const User = mongoose.model('user');
 
@@ -28,12 +29,20 @@ exports.login = async (req, res) => {
       return res.status(400).send({ response: 'error', message: 'incorrect password' });
     }
 
+    const checkPass = currentUser.password;
+    if (password !== checkPass) {
+      return res.status(400).send({
+        response: 'error',
+        message: 'incorrect pass',
+      });
+    }
+
     // Token + save
     const userToken = uuid.v4();
     currentUser.userToken = userToken;
     await currentUser.save();
 
-    return res.status(200).send({ data: { currentUser } });
+    return res.status(200).send({ data: { userToken } });
   } catch (err) {
     return res.status(500).send({ response: 'error', message: 'unknown error' });
   }
@@ -53,6 +62,8 @@ exports.registration = async (req, res) => {
         message: 'user already exist',
       });
     }
+
+    // user.encryptPassword();
 
     const newUser = new User({
       email,
