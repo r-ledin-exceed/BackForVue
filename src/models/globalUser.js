@@ -4,7 +4,7 @@ const moment = require('moment');
 const { Schema } = mongoose;
 
 const User = new Schema({
-  userId: { type: Schema.ObjectId, required: false },
+  userId: { type: Schema.ObjectId, ref: 'user' },
   deviceId: { type: String, required: true },
   clientIp: { type: String },
   userTokenJWT: { type: String },
@@ -34,11 +34,5 @@ const User = new Schema({
 },
 
 { versionKey: false });
-
-// User.methods.getGeoloc = (clientIP) => {
-//   clientIP.getJSON('http://www.geoplugin.net/json.gp?jsoncallback=?', (data) => {
-//     this.geolog = JSON.stringify(data, null, 2);
-//   });
-// };
 
 module.exports = mongoose.model('user', User);
