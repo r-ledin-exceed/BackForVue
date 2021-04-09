@@ -2,8 +2,13 @@ const geoip = require('geoip-lite');
 const uuid = require('uuid');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+// const mongo = require('mongodb');
 
-const User = mongoose.model('user');
+const GameDomino = mongoose.model('GameDomino');
+const GameChess = mongoose.model('GameChess');
+const GameCards = mongoose.model('GameCards');
+const ClientsApps = mongoose.model('ClientsApps');
+const User = mongoose.model('User');
 
 // Sign up
 exports.registration = async (req, res) => {
@@ -36,6 +41,25 @@ exports.registration = async (req, res) => {
     const userTokenJWT = jwt.sign({ playerId, gameId, deviceId }, 'shhhhh', { algorithm: 'HS256' });
     const geoloc = geoip.lookup(clientIp);
 
+    if (gameId === 'domino') {
+      const newPlayer = new GameDomino({
+        gameId, playerId, nickname,
+      });
+      await newPlayer.save('gameDomino');
+    }
+    if (gameId === 'chess') {
+      const newPlayer = new GameChess({
+        gameId, playerId, nickname,
+      });
+      await newPlayer.save('GameChess');
+    }
+    if (gameId === 'cards') {
+      const newPlayer = new GameCards({
+        gameId, playerId, nickname,
+      });
+      await newPlayer.save('GameCards');
+    }
+
     const newUser = new User({
       deviceId,
       geoloc,
@@ -43,6 +67,13 @@ exports.registration = async (req, res) => {
       clientApps: [{ gameId, playerId, nickname }],
     });
     await newUser.save();
+
+    const newClientApps = new ClientsApps({
+      clientApps: [{ gameId, playerId, nickname }],
+      // userId     // nado navesit'
+    });
+    await newClientApps.save();
+
     return res.status(200).send({
       data: {
         userTokenJWT,

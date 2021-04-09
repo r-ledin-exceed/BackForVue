@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const GameDomino = new Schema({
+const GameChess = new Schema({
+
   gameId: { type: String, required: true },
   playerId: { type: String, required: true },
   // nickname: { type: String, required: true },
@@ -13,7 +14,7 @@ const GameDomino = new Schema({
   version: { type: String },
 
 },
-{ collection: 'gameDomino' },
+{ collection: 'gameChess' },
 { versionKey: false });
 
-module.exports = mongoose.model('GameDomino', GameDomino);
+module.exports = mongoose.model('GameChess', GameChess);
