@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const GameChess = new Schema({
-
-  gameId: { type: String, required: true },
+  // gameId: { type: String, required: true },
+  userId: { type: String, ref: 'user' },
   playerId: { type: String, required: true },
   nickname: { type: String, required: true },
   lvl: { type: Number, default: 0 },
@@ -13,7 +13,6 @@ const GameChess = new Schema({
   gameProfilePhotoUrl: { type: String, default: null },
   version: { type: String },
   userTokenJWT: { type: String },
-
 },
 { collection: 'gameChess' },
 { versionKey: false });
