@@ -18,6 +18,7 @@ exports.registration = async (req, res) => {
 
   try {
     // const decoded = jwt.verify(userTokenJWT, 'shhhhh');
+
     // Checking is already exist in that game?
     const currentUser = await User.findOne({ deviceId });
     if (currentUser) {
@@ -40,31 +41,30 @@ exports.registration = async (req, res) => {
     const userTokenJWT = jwt.sign({ playerId, gameId, deviceId }, 'shhhhh', { algorithm: 'HS256' });
     const geoloc = geoip.lookup(clientIp);
 
+    const newUser = new User({
+      deviceId,
+      geoloc,
+    });
+    await newUser.save();
+
     if (gameId === 'domino') {
       const newPlayer = new GameDomino({
-        gameId, playerId, nickname,
+        gameId, playerId, nickname, userTokenJWT,
       });
       await newPlayer.save('gameDomino');
     }
     if (gameId === 'chess') {
       const newPlayer = new GameChess({
-        gameId, playerId, nickname,
+        gameId, playerId, nickname, userTokenJWT,
       });
       await newPlayer.save('GameChess');
     }
     if (gameId === 'cards') {
       const newPlayer = new GameCards({
-        gameId, playerId, nickname,
+        gameId, playerId, nickname, userTokenJWT,
       });
       await newPlayer.save('GameCards');
     }
-
-    const newUser = new User({
-      deviceId,
-      geoloc,
-      userTokenJWT,
-    });
-    await newUser.save();
 
     const newClientApps = new ClientsApps({
       gameId, playerId,
