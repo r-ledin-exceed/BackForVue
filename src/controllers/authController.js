@@ -2,6 +2,7 @@ const geoip = require('geoip-lite');
 const uuid = require('uuid');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+// const gameDomino = require('../models/gameDomino');
 // const mongo = require('mongodb');
 
 const GameDomino = mongoose.model('GameDomino');
@@ -19,62 +20,121 @@ exports.registration = async (req, res) => {
   try {
     // const decoded = jwt.verify(userTokenJWT, 'shhhhh');
 
+    const playerId = uuid.v4();
+    const userTokenJWT = jwt.sign({ playerId, gameId, deviceId }, 'shhhhh', { algorithm: 'HS256' });
+    const geoloc = geoip.lookup(clientIp);
+
     // Checking is already exist in that game?
     const currentUser = await User.findOne({ deviceId });
+
     if (currentUser) {
+      const { userId } = currentUser;
+      const dominoUser = await GameDomino.findOne({ userId });
+      const cardsUser = await GameCards.findOne({ userId });
+      const chessUser = await GameChess.findOne({ userId });
+
+      const newClientApps = new ClientsApps({
+        gameId, playerId, userId,
+      });
+      let newPlayer;
       switch (gameId) {
         case 'domino':
-          return 'gameDomino';
+          if (dominoUser) {
+            res.status(400).send({
+              response: 'error',
+              message: 'you have already registred in domino',
+              userTokenJWT: dominoUser.userTokenJWT,
+              userId: dominoUser.userId,
+            });
+            return 'gameDomino';
+          }
+          newPlayer = new GameDomino({
+            playerId, nickname, userTokenJWT, userId,
+          });
+          await newPlayer.save('gameDomino');
+          await newClientApps.save();
+          break;
         case 'cards':
-          return 'gameCards';
+          if (cardsUser) {
+            res.status(400).send({
+              response: 'error',
+              message: 'you have already registred in cards',
+              userTokenJWT: cardsUser.userTokenJWT,
+              userId: cardsUser.userId,
+            });
+            return 'gameCards';
+          }
+          newPlayer = new GameCards({
+            playerId, nickname, userTokenJWT, userId,
+          });
+          await newPlayer.save('gameCards');
+          await newClientApps.save();
+          break;
         case 'chess':
-          return 'gameChess';
+          if (chessUser) {
+            res.status(400).send({
+              response: 'error',
+              message: 'you have already registred in chess',
+              userTokenJWT: chessUser.userTokenJWT,
+              userId: chessUser.userId,
+            });
+            return 'gameChess';
+          }
+          newPlayer = new GameChess({
+            playerId, nickname, userTokenJWT, userId,
+          });
+          await newPlayer.save('gameChess');
+          await newClientApps.save();
+          break;
         default:
           return res.status(400).send({
             response: 'error',
             message: 'unknown game',
           });
       }
+      return res.status(200).send({
+        data: {
+          userTokenJWT,
+        },
+      });
     }
-
-    const playerId = uuid.v4();
-    const userTokenJWT = jwt.sign({ playerId, gameId, deviceId }, 'shhhhh', { algorithm: 'HS256' });
-    const geoloc = geoip.lookup(clientIp);
 
     const newUser = new User({
       deviceId,
       geoloc,
     });
-    await newUser.save();
+    const newUserId = newUser._id.toString();
+    newUser.userId = newUserId;
 
     if (gameId === 'domino') {
-      const newPlayer = new GameDomino({
-        gameId, playerId, nickname, userTokenJWT,
+      const newPlayerDomino = new GameDomino({
+        gameId, playerId, nickname, userTokenJWT, userId: newUserId,
       });
-      await newPlayer.save('gameDomino');
+      await newPlayerDomino.save('gameDomino');
     }
     if (gameId === 'chess') {
-      const newPlayer = new GameChess({
-        gameId, playerId, nickname, userTokenJWT,
+      const newPlayerChess = new GameChess({
+        gameId, playerId, nickname, userTokenJWT, userId: newUserId,
       });
-      await newPlayer.save('GameChess');
+      await newPlayerChess.save('GameChess');
     }
     if (gameId === 'cards') {
-      const newPlayer = new GameCards({
-        gameId, playerId, nickname, userTokenJWT,
+      const newPlayerCards = new GameCards({
+        gameId, playerId, nickname, userTokenJWT, userId: newUserId,
       });
-      await newPlayer.save('GameCards');
+      await newPlayerCards.save('GameCards');
     }
 
     const newClientApps = new ClientsApps({
-      gameId, playerId,
-      // userId     // nado navesit'
+      gameId, playerId, userId: newUserId,
     });
+
     await newClientApps.save();
+    await newUser.save();
 
     return res.status(200).send({
       data: {
-        userTokenJWT,
+        userTokenJWT, userId: newUserId,
       },
     });
   } catch (err) {

@@ -4,8 +4,8 @@ const moment = require('moment');
 const { Schema } = mongoose;
 
 const User = new Schema({
-  userId: { type: Schema.ObjectId, ref: 'user' },
   deviceId: { type: String, required: true },
+  userId: { type: String, ref: 'user' },
   clientIp: { type: String },
   geoloc: { type: Object },
   created: {

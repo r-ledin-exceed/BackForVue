@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const GameCards = new Schema({
-  gameId: { type: String, required: true },
+  // gameId: { type: String, required: true },
+  userId: { type: String, ref: 'user' },
   playerId: { type: String, required: true },
   nickname: { type: String, required: true },
   lvl: { type: Number, default: 0 },
