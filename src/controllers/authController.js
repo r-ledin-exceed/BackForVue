@@ -4,8 +4,6 @@ const geoip = require('geoip-lite');
 const uuid = require('uuid');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-// const gameDomino = require('../models/gameDomino');
-// const mongo = require('mongodb');
 
 const GameDomino = mongoose.model('GameDomino');
 const GameChess = mongoose.model('GameChess');
@@ -28,20 +26,17 @@ exports.registration = async (req, res) => {
 
     // Checking is already exist in that game?
     const currentUser = await User.findOne({ deviceId });
-
     if (currentUser) {
       const { userId } = currentUser;
       const clientsAppsFinder = await ClientsApps.find({ userId });
-      // const dominoUser = await GameDomino.findOne({ userId });
-      // const cardsUser = await GameCards.findOne({ userId });
-      // const chessUser = await GameChess.findOne({ userId });
-      console.log(clientsAppsFinder);
 
       const newClientApps = new ClientsApps({
         gameId, playerId, userId,
       });
+
       let newPlayer;
       let gameIdCase = '';
+
       clientsAppsFinder.forEach((object) => {
         if (object.gameId === 'chess') {
           gameIdCase = `${gameIdCase} chess`;
@@ -53,21 +48,17 @@ exports.registration = async (req, res) => {
           gameIdCase = `${gameIdCase} domino`;
         }
       });
-      console.log(gameIdCase);
-      if (gameIdCase.indexOf(gameId) !== -1) {
-        console.log('ALREADY REGISTERED');
-      } else {
-        console.log('YOU MAY COME IN');
-      }
 
       switch (gameId) {
         case 'domino':
           if (gameIdCase.indexOf(gameId) !== -1) {
             res.status(400).send({
-              response: 'error',
-              message: 'you have already registred in domino',
-              userTokenJWT,
-              userId,
+              data: {
+                response: 'error',
+                message: 'you have already registred in domino',
+                userTokenJWT,
+                userId,
+              },
             });
             return 'gameDomino';
           }
@@ -85,10 +76,12 @@ exports.registration = async (req, res) => {
         case 'cards':
           if (gameIdCase.indexOf(gameId) !== -1) {
             res.status(400).send({
-              response: 'error',
-              message: 'you have already registred in cards',
-              userTokenJWT,
-              userId,
+              data: {
+                response: 'error',
+                message: 'you have already registred in cards',
+                userTokenJWT,
+                userId,
+              },
             });
             return 'gameCards';
           }
@@ -106,10 +99,12 @@ exports.registration = async (req, res) => {
         case 'chess':
           if (gameIdCase.indexOf(gameId) !== -1) {
             res.status(400).send({
-              response: 'error',
-              message: 'you have already registred in chess',
-              userTokenJWT,
-              userId,
+              data: {
+                response: 'error',
+                message: 'you have already registred in chess',
+                userTokenJWT,
+                userId,
+              },
             });
             return 'gameChess';
           }
@@ -132,30 +127,40 @@ exports.registration = async (req, res) => {
       }
     }
 
+    if (gameId !== 'chess'
+    && gameId !== 'domino'
+    && gameId !== 'cards') {
+      return res.status(400).send({
+        response: 'error',
+        message: 'unknow game',
+      });
+    }
+
     const newUser = new User({
       deviceId,
       geoloc,
     });
     const newUserId = newUser._id.toString();
     newUser.userId = newUserId;
+    const innerInfoNewGame = {
+      gameId,
+      playerId,
+      nickname,
+      userTokenJWT,
+      userId: newUserId,
+    };
 
     if (gameId === 'domino') {
-      const newPlayerDomino = new GameDomino({
-        gameId, playerId, nickname, userTokenJWT, userId: newUserId,
-      });
-      await newPlayerDomino.save('gameDomino');
+      const newPlayerDomino = new GameDomino(innerInfoNewGame);
+      await newPlayerDomino.save();
     }
     if (gameId === 'chess') {
-      const newPlayerChess = new GameChess({
-        gameId, playerId, nickname, userTokenJWT, userId: newUserId,
-      });
-      await newPlayerChess.save('GameChess');
+      const newPlayerChess = new GameChess(innerInfoNewGame);
+      await newPlayerChess.save();
     }
     if (gameId === 'cards') {
-      const newPlayerCards = new GameCards({
-        gameId, playerId, nickname, userTokenJWT, userId: newUserId,
-      });
-      await newPlayerCards.save('GameCards');
+      const newPlayerCards = new GameCards(innerInfoNewGame);
+      await newPlayerCards.save();
     }
 
     const newClientApps = new ClientsApps({
