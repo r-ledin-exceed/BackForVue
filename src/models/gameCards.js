@@ -12,7 +12,6 @@ const GameCards = new Schema({
   isOnline: { type: Boolean, default: false },
   gameProfilePhotoUrl: { type: String, default: null },
   version: { type: String },
-  userTokenJWT: { type: String },
 },
 { collection: 'gameCards' },
 { versionKey: false });
