@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 const geoip = require('geoip-lite');
 const uuid = require('uuid');
 const mongoose = require('mongoose');
@@ -29,22 +31,43 @@ exports.registration = async (req, res) => {
 
     if (currentUser) {
       const { userId } = currentUser;
-      const dominoUser = await GameDomino.findOne({ userId });
-      const cardsUser = await GameCards.findOne({ userId });
-      const chessUser = await GameChess.findOne({ userId });
+      const clientsAppsFinder = await ClientsApps.find({ userId });
+      // const dominoUser = await GameDomino.findOne({ userId });
+      // const cardsUser = await GameCards.findOne({ userId });
+      // const chessUser = await GameChess.findOne({ userId });
+      console.log(clientsAppsFinder);
 
       const newClientApps = new ClientsApps({
         gameId, playerId, userId,
       });
       let newPlayer;
+      let gameIdCase = '';
+      clientsAppsFinder.forEach((object) => {
+        if (object.gameId === 'chess') {
+          gameIdCase = `${gameIdCase} chess`;
+        }
+        if (object.gameId === 'cards') {
+          gameIdCase = `${gameIdCase} cards`;
+        }
+        if (object.gameId === 'domino') {
+          gameIdCase = `${gameIdCase} domino`;
+        }
+      });
+      console.log(gameIdCase);
+      if (gameIdCase.indexOf(gameId) !== -1) {
+        console.log('ALREADY REGISTERED');
+      } else {
+        console.log('YOU MAY COME IN');
+      }
+
       switch (gameId) {
         case 'domino':
-          if (dominoUser) {
+          if (gameIdCase.indexOf(gameId) !== -1) {
             res.status(400).send({
               response: 'error',
               message: 'you have already registred in domino',
-              userTokenJWT: dominoUser.userTokenJWT,
-              userId: dominoUser.userId,
+              userTokenJWT,
+              userId,
             });
             return 'gameDomino';
           }
@@ -53,14 +76,19 @@ exports.registration = async (req, res) => {
           });
           await newPlayer.save('gameDomino');
           await newClientApps.save();
-          break;
+          return res.status(200).send({
+            data: {
+              userTokenJWT,
+              userId,
+            },
+          });
         case 'cards':
-          if (cardsUser) {
+          if (gameIdCase.indexOf(gameId) !== -1) {
             res.status(400).send({
               response: 'error',
               message: 'you have already registred in cards',
-              userTokenJWT: cardsUser.userTokenJWT,
-              userId: cardsUser.userId,
+              userTokenJWT,
+              userId,
             });
             return 'gameCards';
           }
@@ -69,14 +97,19 @@ exports.registration = async (req, res) => {
           });
           await newPlayer.save('gameCards');
           await newClientApps.save();
-          break;
+          return res.status(200).send({
+            data: {
+              userTokenJWT,
+              userId,
+            },
+          });
         case 'chess':
-          if (chessUser) {
+          if (gameIdCase.indexOf(gameId) !== -1) {
             res.status(400).send({
               response: 'error',
               message: 'you have already registred in chess',
-              userTokenJWT: chessUser.userTokenJWT,
-              userId: chessUser.userId,
+              userTokenJWT,
+              userId,
             });
             return 'gameChess';
           }
@@ -85,18 +118,18 @@ exports.registration = async (req, res) => {
           });
           await newPlayer.save('gameChess');
           await newClientApps.save();
-          break;
+          return res.status(200).send({
+            data: {
+              userTokenJWT,
+              userId,
+            },
+          });
         default:
           return res.status(400).send({
             response: 'error',
             message: 'unknown game',
           });
       }
-      return res.status(200).send({
-        data: {
-          userTokenJWT,
-        },
-      });
     }
 
     const newUser = new User({
