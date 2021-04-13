@@ -24,8 +24,9 @@ const changeNickname = async (req, res) => {
     }
 
     try {
-    const currentAccount = await ClientsApps.findOne({ userId });
-    if (currentAccount.userTokenJWT !== usertokenjwt) {
+    const currentAccount = await ClientsApps.findOne({ userTokenJWT: usertokenjwt });
+    console.log(currentAccount)
+    if (currentAccount.userId !== userId) {
       return res.status(400).send({ response: 'error', message: 'incorrect JWC to user id' });
     }
     } catch (err) {
