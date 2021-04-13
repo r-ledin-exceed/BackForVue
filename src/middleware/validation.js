@@ -23,6 +23,15 @@ const addNewUser = async (req, res, next) => {
   test(req.body, res, next, validationRule);
 };
 
+const changeNickname = async (req, res, next) => {
+  const validationRule = {
+    userId: 'required',
+    nickname: 'required|min:3|max:12',
+  };
+  test(req.body, res, next, validationRule);
+};
+
 module.exports = {
   addNewUser,
+  changeNickname,
 };

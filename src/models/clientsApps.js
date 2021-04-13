@@ -8,6 +8,8 @@ const ClientsApps = new Schema({
   playerId: { type: String, required: true },
   version: { type: String },
   userTokenJWT: { type: String },
+  system: { type: String },
+  systemVersion: { type: String },
 },
 { collection: 'clientsApps' },
 { versionKey: false });

@@ -3,7 +3,7 @@ const uuid = require('uuid');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const { createNewClient } = require('../helpers/createNewClient');
-const { SECRET_KEY } = require('/home/user/back_vue/config')
+const { SECRET } = require('/home/user/back_vue/config');
 
 const ClientsApps = mongoose.model('ClientsApps');
 const User = mongoose.model('User');
@@ -11,15 +11,15 @@ const User = mongoose.model('User');
 // Sign up
 exports.registration = async (req, res) => {
   const {
-    deviceId, clientIp, nickname, gameId,
+    deviceId, clientIp, nickname, gameId, system, systemVersion,
   } = req.body;
 
   try {
-    // const decoded = jwt.verify(userTokenJWT, 'shhhhh');
-
     const playerId = uuid.v4();
-    const userTokenJWT = jwt.sign({ playerId, gameId, deviceId }, SECRET_KEY, { algorithm: 'HS256' });
+    const userTokenJWT = jwt.sign({ playerId, gameId, deviceId }, SECRET, { algorithm: 'HS256' });
     const geoloc = geoip.lookup(clientIp);
+    // const decoded = jwt.verify(userTokenJWT, SECRET);
+    // console.log(decoded)
     // Checking is already exist in that game?
     const currentUser = await User.findOne({ deviceId });
     if (currentUser) {
@@ -27,7 +27,7 @@ exports.registration = async (req, res) => {
       const clientsAppsFinder = await ClientsApps.find({ userId });
       const checkClient = clientsAppsFinder.findIndex((object) => object.gameId === gameId);
       const innerPlayer = {
-        playerId, nickname, userTokenJWT, userId, gameId,
+        playerId, nickname, userTokenJWT, userId, gameId, system, systemVersion,
       };
       if (checkClient !== -1) {
         return res.status(400).send({
@@ -69,7 +69,7 @@ exports.registration = async (req, res) => {
     await newClient.save();
 
     const newClientApps = new ClientsApps({
-      gameId, playerId, userId: newUserId, userTokenJWT,
+      gameId, playerId, userId: newUserId, userTokenJWT, system, systemVersion,
     });
 
     await newClientApps.save();

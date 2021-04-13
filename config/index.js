@@ -1,6 +1,5 @@
-const env = process.env.NODE_ENV || "development";
+require('dotenv').config();
 
-const config = require(`./env/${env.toLowerCase()}`);
-const SECRET_KEY =  'SuperSecretKeyVerySecretVerySuper'
+const SECRET =  process.env.SECRET_KEY
 
-module.exports = { config, SECRET_KEY }
+module.exports = { SECRET }
