@@ -14,8 +14,4 @@ router.put('/changeNickname',
   validator.changeNickname,
   playerController.changeNickname);
 
-router.put('/changePhoto',
-  // validator.changeNickname,
-  playerController.changePhotoUrl);
-
 module.exports = router;

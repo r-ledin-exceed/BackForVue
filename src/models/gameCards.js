@@ -10,6 +10,8 @@ const GameCards = new Schema({
   balance: { type: Number, default: 0 },
   isOnline: { type: Boolean, default: false },
   gameProfilePhotoUrl: { type: String, default: null },
+  key1: { type: String, default: '' },
+  key2: { type: String, default: '' },
 },
 { collection: 'gameCards' },
 { versionKey: false });
