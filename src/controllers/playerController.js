@@ -10,17 +10,16 @@ const { chooseModel } = require('../helpers/giveModelDependOnGameId');
 const User = mongoose.model('User');
 
 const changeNickname = async (req, res) => {
-  const { nickname, version, userId } = req.body;
+  const { data, nickname, version, userId } = req.body;
   const { usertokenjwt } = req.headers;
 
   try {
     const decoded = jwt.verify(usertokenjwt, SECRET);
-    const { gameId } = decoded;
-    const { deviceId } = decoded;
+    const { gameId, deviceId } = decoded;
 
-    const model = await chooseModel(gameId);
+    const gameModel = await chooseModel(gameId);
 
-    const currentUser = await model.findOne({ userId });
+    const currentUser = await gameModel.findOne({ userId });
     const currentGlobalUser = await User.findOne({ deviceId });
 
     if (currentUser.nickname !== nickname) {
@@ -55,8 +54,7 @@ const changePhotoUrl = async (req, res) => {
 
   try {
     const decoded = jwt.verify(usertokenjwt, SECRET);
-    const { gameId } = decoded;
-    const { deviceId } = decoded;
+c
 
     const model = await chooseModel(gameId);
 
