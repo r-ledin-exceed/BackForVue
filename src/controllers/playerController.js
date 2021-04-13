@@ -6,88 +6,59 @@ const { SECRET } = require('/home/user/back_vue/config');
 const moment = require('moment');
 const { chooseModel } = require('../helpers/giveModelDependOnGameId');
 
-// const ClientsApps = mongoose.model('ClientsApps');
+const ClientsApps = mongoose.model('ClientsApps');
 const User = mongoose.model('User');
 
 const changeNickname = async (req, res) => {
-  const { data, nickname, version, userId } = req.body;
+  const {
+    data, nickname, version, userId, gameProfilePhotoUrl,
+  } = req.body;
   const { usertokenjwt } = req.headers;
 
   try {
+    try {
+      const decoded = jwt.verify(usertokenjwt, SECRET);
+    } catch (err) {
+      return res.status(400).send({ response: 'error', message: 'Incorrect JWC-Token' });
+    }
+
+    const currentAccount = await ClientsApps.findOne({ userId });
+    if (currentAccount.userTokenJWT !== usertokenjwt) {
+      return res.status(400).send({ response: 'error', message: 'incorrect JWC to user id' });
+    }
+
     const decoded = jwt.verify(usertokenjwt, SECRET);
     const { gameId, deviceId } = decoded;
-
     const gameModel = await chooseModel(gameId);
 
     const currentUser = await gameModel.findOne({ userId });
     const currentGlobalUser = await User.findOne({ deviceId });
 
-    if (currentUser.nickname !== nickname) {
-      currentUser.nickname = nickname;
-      currentGlobalUser.updated = moment.utc();
-    } else {
-      return res.status(400).send({
-        data: {
-          response: 'error',
-          message: 'new nickname is same to old',
-        },
-      });
+    for (const key in data) {
+      currentUser[key] = data[key];
+      console.log(currentUser.key, data[key]);
+      await currentUser.save();
     }
+
+    currentUser.nickname = nickname;
+    currentUser.gameProfilePhotoUrl = gameProfilePhotoUrl;
+    currentGlobalUser.updated = moment.utc();
 
     await currentUser.save();
     await currentGlobalUser.save();
 
     return res.status(200).send({
       data: {
-        message: 'new nickname is',
+        message: 'new nickname and phURL is',
         nickname,
-      },
-    });
-  } catch (err) {
-    return res.status(500).send({ response: 'error', code: 0, message: 'bad serve' });
-  }
-};
-
-const changePhotoUrl = async (req, res) => {
-  const { gameProfilePhotoUrl, version, userId } = req.body;
-  const { usertokenjwt } = req.headers;
-
-  try {
-    const decoded = jwt.verify(usertokenjwt, SECRET);
-c
-
-    const model = await chooseModel(gameId);
-
-    const currentUser = await model.findOne({ userId });
-    const currentGlobalUser = await User.findOne({ deviceId });
-
-    if (currentUser.gameProfilePhotoUrl !== gameProfilePhotoUrl) {
-      currentUser.gameProfilePhotoUrl = gameProfilePhotoUrl;
-      currentGlobalUser.updated = moment.utc();
-    } else {
-      return res.status(400).send({
-        data: {
-          response: 'error',
-          message: 'new photo is same to old',
-        },
-      });
-    }
-
-    await currentUser.save();
-    await currentGlobalUser.save();
-
-    return res.status(200).send({
-      data: {
-        message: 'new gameProfilePhotoUrl is',
         gameProfilePhotoUrl,
       },
     });
   } catch (err) {
-    return res.status(500).send({ response: 'error', code: 0, message: 'bad serve' });
+    return res.status(500).send({ response: 'error', message: 'bad serve' });
   }
 };
 
 module.exports = {
   changeNickname,
-  changePhotoUrl,
 };
