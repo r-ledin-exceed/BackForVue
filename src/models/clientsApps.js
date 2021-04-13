@@ -10,6 +10,7 @@ const ClientsApps = new Schema({
   userTokenJWT: { type: String },
   system: { type: String },
   systemVersion: { type: String },
+  userObjId: { type: Schema.ObjectId, ref: 'users' },
 },
 { collection: 'clientsApps' },
 { versionKey: false });

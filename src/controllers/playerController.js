@@ -2,50 +2,48 @@
 // const uuid = require('uuid');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const { SECRET } = require('/home/user/back_vue/config');
 const moment = require('moment');
+const { SECRET } = require('../../config');
 const { chooseModel } = require('../helpers/giveModelDependOnGameId');
 
 const ClientsApps = mongoose.model('ClientsApps');
 const User = mongoose.model('User');
 
+const checkToken = (res, userTokenJWT) => {
+  try {
+    return jwt.verify(userTokenJWT, SECRET);
+  } catch (err) {
+    return res.status(400).send({ response: 'error', message: 'Incorrect JWC-Token' });
+  }
+};
+
 const changeNickname = async (req, res) => {
   const {
-    data, nickname, version, userId, gameProfilePhotoUrl,
+    data,
   } = req.body;
-  const { usertokenjwt } = req.headers;
+  const { usertokenjwt: userTokenJWT } = req.headers;
 
   try {
-  
-    try {
-      const decoded = jwt.verify(usertokenjwt, SECRET);
-    } catch (err) {
-      return res.status(400).send({ response: 'error', message: 'Incorrect JWC-Token' });
+    const decoded = checkToken(res, userTokenJWT);
+
+    const currentAccount = await ClientsApps.findOne({ userTokenJWT });
+    if (!currentAccount && currentAccount.userId !== data.userId) {
+      return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
     }
 
-    try {
-    const currentAccount = await ClientsApps.findOne({ userTokenJWT: usertokenjwt });
-    console.log(currentAccount)
-    if (currentAccount.userId !== userId) {
-      return res.status(400).send({ response: 'error', message: 'incorrect JWC to user id' });
-    }
-    } catch (err) {
-    return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
-    }
-
-    const decoded = jwt.verify(usertokenjwt, SECRET);
     const { gameId, deviceId } = decoded;
     const gameModel = await chooseModel(gameId);
 
-    const currentUser = await gameModel.findOne({ userId });
+    const currentUser = await gameModel.findOne({ userId: data.userId });
     const currentGlobalUser = await User.findOne({ deviceId });
 
+    // eslint-disable-next-line no-restricted-syntax
     for (const key in data) {
-      currentUser[key] = data[key];
+      if (key !== 'userId') {
+        currentUser[key] = data[key];
+      }
     }
 
-    currentUser.nickname = nickname;
-    currentUser.gameProfilePhotoUrl = gameProfilePhotoUrl;
     currentGlobalUser.updated = moment.utc();
 
     await currentUser.save();
@@ -53,13 +51,11 @@ const changeNickname = async (req, res) => {
 
     return res.status(200).send({
       data: {
-        message: 'new nickname and phURL are',
-        nickname,
-        gameProfilePhotoUrl,
+        message: 'ok',
       },
     });
   } catch (err) {
-    return res.status(500).send({ response: 'error', message: 'bad serve' });
+    return res.status(500).send({ response: 'error', message: err.message });
   }
 };
 

@@ -5,7 +5,8 @@ const { Schema } = mongoose;
 
 const User = new Schema({
   deviceId: { type: String, required: true },
-  userId: { type: String, ref: 'user' },
+  userId: { type: String },
+  userObjId: { type: Schema.ObjectId, ref: 'users' },
   clientIp: { type: String },
   geoloc: { type: Object },
   created: {

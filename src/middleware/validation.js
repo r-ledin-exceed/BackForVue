@@ -28,7 +28,7 @@ const changeNickname = async (req, res, next) => {
     userId: 'required',
     nickname: 'required|min:3|max:12',
   };
-  test(req.body, res, next, validationRule);
+  test(req.body.data, res, next, validationRule);
 };
 
 module.exports = {

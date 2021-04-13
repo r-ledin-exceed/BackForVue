@@ -1,9 +1,10 @@
+/* eslint-disable no-underscore-dangle */
 const geoip = require('geoip-lite');
 const uuid = require('uuid');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const { createNewClient } = require('../helpers/createNewClient');
-const { SECRET } = require('/home/user/back_vue/config');
+const { SECRET } = require('../../config');
 
 const ClientsApps = mongoose.model('ClientsApps');
 const User = mongoose.model('User');
@@ -18,6 +19,11 @@ exports.registration = async (req, res) => {
     const playerId = uuid.v4();
     const userTokenJWT = jwt.sign({ playerId, gameId, deviceId }, SECRET, { algorithm: 'HS256' });
     const geoloc = geoip.lookup(clientIp);
+
+    const userObjId = new mongoose.Types.ObjectId();
+    // userObjId = mongoose.Types.ObjectId;
+    console.log(typeof userObjId);
+
     // const decoded = jwt.verify(userTokenJWT, SECRET);
     // console.log(decoded)
     // Checking is already exist in that game?
@@ -27,7 +33,7 @@ exports.registration = async (req, res) => {
       const clientsAppsFinder = await ClientsApps.find({ userId });
       const checkClient = clientsAppsFinder.findIndex((object) => object.gameId === gameId);
       const innerPlayer = {
-        playerId, nickname, userTokenJWT, userId, gameId, system, systemVersion,
+        playerId, nickname, userTokenJWT, userId, gameId, system, systemVersion, userObjId,
       };
       if (checkClient !== -1) {
         return res.status(400).send({
