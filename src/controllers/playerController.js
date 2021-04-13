@@ -16,15 +16,20 @@ const changeNickname = async (req, res) => {
   const { usertokenjwt } = req.headers;
 
   try {
+  
     try {
       const decoded = jwt.verify(usertokenjwt, SECRET);
     } catch (err) {
       return res.status(400).send({ response: 'error', message: 'Incorrect JWC-Token' });
     }
 
+    try {
     const currentAccount = await ClientsApps.findOne({ userId });
     if (currentAccount.userTokenJWT !== usertokenjwt) {
       return res.status(400).send({ response: 'error', message: 'incorrect JWC to user id' });
+    }
+    } catch (err) {
+    return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
     }
 
     const decoded = jwt.verify(usertokenjwt, SECRET);
@@ -49,7 +54,7 @@ const changeNickname = async (req, res) => {
 
     return res.status(200).send({
       data: {
-        message: 'new nickname and phURL is',
+        message: 'new nickname and phURL are',
         nickname,
         gameProfilePhotoUrl,
       },
