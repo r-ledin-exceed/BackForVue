@@ -17,6 +17,7 @@ module.exports = {
     'no-debugger': 'warn',
     'linebreak-style': ['warn', 'unix'],
     'no-unused-vars': 'warn',
+    'no-underscore-dangle': 'no',
   },
   overrides: [
     {

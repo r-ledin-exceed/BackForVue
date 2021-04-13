@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 const mongoose = require('mongoose');
 require('dotenv').config();
+const config = require('../config');
 const express = require('express');
-const bodyParser = require('body-parser');
 const router = require('./routes');
 
 const app = express();
-// const ENV = process.env.NODE_ENV || config.env;
+const ENV = process.env.NODE_ENV || config.env;
 const port = 8080;
 app.listen(port, () => {
   console.log(`Server is up and running on port number ${port}`);
