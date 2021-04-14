@@ -20,10 +20,6 @@ exports.registration = async (req, res) => {
     const userTokenJWT = jwt.sign({ playerId, gameId, deviceId }, SECRET, { algorithm: 'HS256' });
     const geoloc = geoip.lookup(clientIp);
 
-    const userObjId = new mongoose.Types.ObjectId();
-    // userObjId = mongoose.Types.ObjectId;
-    console.log(typeof userObjId);
-
     // const decoded = jwt.verify(userTokenJWT, SECRET);
     // console.log(decoded)
     // Checking is already exist in that game?
@@ -33,7 +29,7 @@ exports.registration = async (req, res) => {
       const clientsAppsFinder = await ClientsApps.find({ userId });
       const checkClient = clientsAppsFinder.findIndex((object) => object.gameId === gameId);
       const innerPlayer = {
-        playerId, nickname, userTokenJWT, userId, gameId, system, systemVersion, userObjId,
+        playerId, nickname, userTokenJWT, userId, gameId, system, systemVersion,
       };
       if (checkClient !== -1) {
         return res.status(400).send({

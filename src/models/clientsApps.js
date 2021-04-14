@@ -3,14 +3,13 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const ClientsApps = new Schema({
-  userId: { type: String, ref: 'user' },
+  userId: { type: Schema.ObjectId, ref: 'users' },
   gameId: { type: String, required: true },
   playerId: { type: String, required: true },
   version: { type: String },
   userTokenJWT: { type: String },
   system: { type: String },
   systemVersion: { type: String },
-  userObjId: { type: Schema.ObjectId, ref: 'users' },
 },
 { collection: 'clientsApps' },
 { versionKey: false });
