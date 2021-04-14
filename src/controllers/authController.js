@@ -50,8 +50,14 @@ exports.registration = async (req, res) => {
         });
       }
       const newClient = await createNewClient(gameId, innerPlayer);
+      newClient.gameInfoCards = newClient._id;
+      newClient.gameInfoChess = newClient._id;
+      newClient.gameInfoDomino = newClient._id;
       await newClient.save();
       const newClientApps = new ClientsApps(innerPlayer);
+      newClientApps.gameInfoCards = newClient.gameInfoCards;
+      newClientApps.gameInfoChess = newClient.gameInfoChess;
+      newClientApps.gameInfoDomino = newClient.gameInfoDomino;
       await newClientApps.save();
       return res.status(200).send({
         data: {
@@ -81,6 +87,9 @@ exports.registration = async (req, res) => {
     };
 
     const newClient = await createNewClient(gameId, innerInfoNewGame);
+    newClient.gameInfoCards = newClient._id;
+    newClient.gameInfoChess = newClient._id;
+    newClient.gameInfoDomino = newClient._id;
     await newClient.save();
 
     const newClientApps = new ClientsApps({
@@ -90,9 +99,9 @@ exports.registration = async (req, res) => {
       userTokenJWT,
       system,
       systemVersion,
-      gameInfoCards: newUserId,
-      gameInfoChess: newUserId,
-      gameInfoDomino: newUserId,
+      gameInfoCards: newClient._id,
+      gameInfoChess: newClient._id,
+      gameInfoDomino: newClient._id,
     });
 
     await newUser.save();

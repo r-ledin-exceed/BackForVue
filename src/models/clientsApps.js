@@ -18,7 +18,3 @@ const ClientsApps = new Schema({
 { versionKey: false });
 
 module.exports = mongoose.model('ClientsApps', ClientsApps);
-
-// isOnline: { type: Boolean, default: false },
-// gameProfilePhotoUrl: { type: String, default: null },
-// nickname: { type: String, required: true },

@@ -1,3 +1,4 @@
+/* eslint-disable guard-for-in */
 // const geoip = require('geoip-lite');
 // const uuid = require('uuid');
 const mongoose = require('mongoose');
@@ -65,7 +66,11 @@ const getInfoAboutUser = async (req, res) => {
   } = req.query;
   try {
     const currentUser = await ClientsApps.find({ userId }, { userTokenJWT: 0 })
-      .populate('userId').populate('gameInfoCards').lean()
+      .populate('userId')
+      .populate('gameInfoCards')
+      .populate('gameInfoChess')
+      .populate('gameInfoDomino')
+      .lean()
       .exec();
 
     const userInfo = currentUser[0].userId;
@@ -73,6 +78,15 @@ const getInfoAboutUser = async (req, res) => {
     for (let i = 1; i < currentUser.length; i += 1) {
       currentUser[i].userId = userId;
     }
+
+    currentUser.forEach((element) => {
+      // eslint-disable-next-line no-restricted-syntax
+      for (let key in element) {
+        if (element[key] === null) {
+          element[key] = undefined;
+        }
+      }
+    });
 
     // .populate('userId').exec();
     return res.status(200).send({ currentUser });
