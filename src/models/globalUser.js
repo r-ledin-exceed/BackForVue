@@ -5,10 +5,8 @@ const { Schema } = mongoose;
 
 const User = new Schema({
   deviceId: { type: String, required: true },
-  userId: { type: Schema.ObjectId, ref: 'users' },
-  userObjId: { type: Schema.ObjectId },
+  userId: { type: Schema.ObjectId, ref: 'ClientsApps' },
   clientIp: { type: String },
-  geoloc: { type: Object },
   created: {
     type: Date,
     default: moment.utc(),

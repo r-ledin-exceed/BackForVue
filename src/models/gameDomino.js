@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const GameDomino = new Schema({
-  userId: { type: Schema.ObjectId, ref: 'users' },
+  userId: { type: Schema.ObjectId, ref: 'ClientsApps' },
+  gameInfoDomino: { type: Schema.ObjectId, ref: 'ClientsApps' },
   playerId: { type: String, required: true },
   nickname: { type: String, required: true },
   lvl: { type: Number, default: 0 },

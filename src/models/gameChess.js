@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const GameChess = new Schema({
-  userId: { type: Schema.ObjectId, ref: 'users' },
+  userId: { type: Schema.ObjectId, ref: 'ClientsApps' },
+  gameInfoChess: { type: Schema.ObjectId, ref: 'ClientsApps' },
   playerId: { type: String, required: true },
   nickname: { type: String, required: true },
   lvl: { type: Number, default: 0 },

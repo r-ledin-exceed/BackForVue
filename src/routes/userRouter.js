@@ -14,4 +14,7 @@ router.put('/changeNickname',
   validator.changeNickname,
   playerController.changeNickname);
 
+router.get('/getInfo',
+  playerController.getInfoAboutUser);
+
 module.exports = router;

@@ -29,7 +29,16 @@ exports.registration = async (req, res) => {
       const clientsAppsFinder = await ClientsApps.find({ userId });
       const checkClient = clientsAppsFinder.findIndex((object) => object.gameId === gameId);
       const innerPlayer = {
-        playerId, nickname, userTokenJWT, userId, gameId, system, systemVersion,
+        playerId,
+        nickname,
+        userTokenJWT,
+        userId,
+        gameId,
+        system,
+        systemVersion,
+        gameInfoCards: userId,
+        gameInfoChess: userId,
+        gameInfoDomino: userId,
       };
       if (checkClient !== -1) {
         return res.status(400).send({
@@ -60,22 +69,34 @@ exports.registration = async (req, res) => {
     const newUserId = newUser._id.toString();
 
     newUser.userId = newUserId;
+
     const innerInfoNewGame = {
       gameId,
       playerId,
       nickname,
       userId: newUserId,
+      gameInfoCards: newUserId,
+      gameInfoChess: newUserId,
+      gameInfoDomino: newUserId,
     };
 
     const newClient = await createNewClient(gameId, innerInfoNewGame);
     await newClient.save();
 
     const newClientApps = new ClientsApps({
-      gameId, playerId, userId: newUserId, userTokenJWT, system, systemVersion,
+      gameId,
+      playerId,
+      userId: newUserId,
+      userTokenJWT,
+      system,
+      systemVersion,
+      gameInfoCards: newUserId,
+      gameInfoChess: newUserId,
+      gameInfoDomino: newUserId,
     });
 
-    await newClientApps.save();
     await newUser.save();
+    await newClientApps.save();
 
     return res.status(200).send({
       data: {
@@ -83,6 +104,6 @@ exports.registration = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(500).send({ response: 'error', code: 0, message: 'bad serve' });
+    return res.status(500).send({ response: 'error', code: 0, message: err.message });
   }
 };
