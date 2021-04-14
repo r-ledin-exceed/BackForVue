@@ -4,7 +4,6 @@ const { Schema } = mongoose;
 
 const GameCards = new Schema({
   userId: { type: Schema.ObjectId },
-  gameInfoCards: { type: Schema.ObjectId, ref: 'ClientsApps' },
   playerId: { type: String, required: true },
   nickname: { type: String, required: true },
   lvl: { type: Number, default: 0 },

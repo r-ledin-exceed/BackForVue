@@ -66,12 +66,28 @@ const getInfoAboutUser = async (req, res) => {
   } = req.query;
   try {
     const currentUser = await ClientsApps.find({ userId }, { userTokenJWT: 0 })
-      .populate('userId')
-      .populate('gameInfoCards')
+      .populate('userId').populate('gameInfoCards').populate('gameInfoDomino')
       .populate('gameInfoChess')
-      .populate('gameInfoDomino')
       .lean()
       .exec();
+
+    // await currentUser.forEach(async (element) => {
+    //   console.log(element.gameId);
+
+    //   switch (element.gameId) {
+    //     case 'domino':
+    //       await element.find().populate('gameInfoDomino').exec();
+    //       break;
+    //     case 'cards':
+    //       await element.find().populate('gameInfoCards').exec();
+    //       break;
+    //     case 'chess':
+    //       await element.find().populate('gameInfoChess').exec();
+    //       break;
+    //     default:
+    //       return null;
+    //   }
+    // });
 
     const userInfo = currentUser[0].userId;
     currentUser.unshift(userInfo);
@@ -79,14 +95,14 @@ const getInfoAboutUser = async (req, res) => {
       currentUser[i].userId = userId;
     }
 
-    currentUser.forEach((element) => {
-      // eslint-disable-next-line no-restricted-syntax
-      for (let key in element) {
-        if (element[key] === null) {
-          element[key] = undefined;
-        }
-      }
-    });
+    // currentUser.forEach((element) => {
+    //   // eslint-disable-next-line no-restricted-syntax
+    //   for (const key in element) {
+    //     if (element[key] === null) {
+    //       console.log(element[key]);
+    //     }
+    //   }
+    // });
 
     // .populate('userId').exec();
     return res.status(200).send({ currentUser });

@@ -20,8 +20,6 @@ exports.registration = async (req, res) => {
     const userTokenJWT = jwt.sign({ playerId, gameId, deviceId }, SECRET, { algorithm: 'HS256' });
     const geoloc = geoip.lookup(clientIp);
 
-    // const decoded = jwt.verify(userTokenJWT, SECRET);
-    // console.log(decoded)
     // Checking is already exist in that game?
     const currentUser = await User.findOne({ deviceId });
     if (currentUser) {
@@ -36,9 +34,6 @@ exports.registration = async (req, res) => {
         gameId,
         system,
         systemVersion,
-        gameInfoCards: userId,
-        gameInfoChess: userId,
-        gameInfoDomino: userId,
       };
       if (checkClient !== -1) {
         return res.status(400).send({
@@ -49,16 +44,16 @@ exports.registration = async (req, res) => {
           },
         });
       }
+
       const newClient = await createNewClient(gameId, innerPlayer);
-      newClient.gameInfoCards = newClient._id;
-      newClient.gameInfoChess = newClient._id;
-      newClient.gameInfoDomino = newClient._id;
       await newClient.save();
+
       const newClientApps = new ClientsApps(innerPlayer);
-      newClientApps.gameInfoCards = newClient.gameInfoCards;
-      newClientApps.gameInfoChess = newClient.gameInfoChess;
-      newClientApps.gameInfoDomino = newClient.gameInfoDomino;
+      newClientApps.gameInfoCards = newClient._id;
+      newClientApps.gameInfoChess = newClient._id;
+      newClientApps.gameInfoDomino = newClient._id;
       await newClientApps.save();
+
       return res.status(200).send({
         data: {
           message: "You've have registred succesfully",
@@ -81,15 +76,10 @@ exports.registration = async (req, res) => {
       playerId,
       nickname,
       userId: newUserId,
-      gameInfoCards: newUserId,
-      gameInfoChess: newUserId,
-      gameInfoDomino: newUserId,
+
     };
 
     const newClient = await createNewClient(gameId, innerInfoNewGame);
-    newClient.gameInfoCards = newClient._id;
-    newClient.gameInfoChess = newClient._id;
-    newClient.gameInfoDomino = newClient._id;
     await newClient.save();
 
     const newClientApps = new ClientsApps({
