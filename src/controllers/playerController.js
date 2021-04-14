@@ -1,3 +1,4 @@
+/* eslint-disable guard-for-in */
 // const geoip = require('geoip-lite');
 // const uuid = require('uuid');
 const mongoose = require('mongoose');
@@ -27,7 +28,7 @@ const changeNickname = async (req, res) => {
     const decoded = checkToken(res, userTokenJWT);
 
     const currentAccount = await ClientsApps.findOne({ userTokenJWT });
-    if (!currentAccount && currentAccount.userId !== data.userId) {
+    if (!currentAccount && currentAccount.userId.toString() !== data.userId) {
       return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
     }
 
@@ -59,6 +60,58 @@ const changeNickname = async (req, res) => {
   }
 };
 
+const getInfoAboutUser = async (req, res) => {
+  const {
+    userId,
+  } = req.query;
+  try {
+    const currentUser = await ClientsApps.find({ userId }, { userTokenJWT: 0 })
+      .populate('userId').populate('gameInfoCards').populate('gameInfoDomino')
+      .populate('gameInfoChess')
+      .lean()
+      .exec();
+
+    // await currentUser.forEach(async (element) => {
+    //   console.log(element.gameId);
+
+    //   switch (element.gameId) {
+    //     case 'domino':
+    //       await element.find().populate('gameInfoDomino').exec();
+    //       break;
+    //     case 'cards':
+    //       await element.find().populate('gameInfoCards').exec();
+    //       break;
+    //     case 'chess':
+    //       await element.find().populate('gameInfoChess').exec();
+    //       break;
+    //     default:
+    //       return null;
+    //   }
+    // });
+
+    const userInfo = currentUser[0].userId;
+    currentUser.unshift(userInfo);
+    for (let i = 1; i < currentUser.length; i += 1) {
+      currentUser[i].userId = userId;
+    }
+
+    // currentUser.forEach((element) => {
+    //   // eslint-disable-next-line no-restricted-syntax
+    //   for (const key in element) {
+    //     if (element[key] === null) {
+    //       console.log(element[key]);
+    //     }
+    //   }
+    // });
+
+    // .populate('userId').exec();
+    return res.status(200).send({ currentUser });
+  } catch (err) {
+    return res.status(500).send({ response: 'error', message: err.message });
+  }
+};
+
 module.exports = {
   changeNickname,
+  getInfoAboutUser,
 };

@@ -20,12 +20,6 @@ exports.registration = async (req, res) => {
     const userTokenJWT = jwt.sign({ playerId, gameId, deviceId }, SECRET, { algorithm: 'HS256' });
     const geoloc = geoip.lookup(clientIp);
 
-    const userObjId = new mongoose.Types.ObjectId();
-    // userObjId = mongoose.Types.ObjectId;
-    console.log(typeof userObjId);
-
-    // const decoded = jwt.verify(userTokenJWT, SECRET);
-    // console.log(decoded)
     // Checking is already exist in that game?
     const currentUser = await User.findOne({ deviceId });
     if (currentUser) {
@@ -33,7 +27,13 @@ exports.registration = async (req, res) => {
       const clientsAppsFinder = await ClientsApps.find({ userId });
       const checkClient = clientsAppsFinder.findIndex((object) => object.gameId === gameId);
       const innerPlayer = {
-        playerId, nickname, userTokenJWT, userId, gameId, system, systemVersion, userObjId,
+        playerId,
+        nickname,
+        userTokenJWT,
+        userId,
+        gameId,
+        system,
+        systemVersion,
       };
       if (checkClient !== -1) {
         return res.status(400).send({
@@ -44,10 +44,16 @@ exports.registration = async (req, res) => {
           },
         });
       }
+
       const newClient = await createNewClient(gameId, innerPlayer);
       await newClient.save();
+
       const newClientApps = new ClientsApps(innerPlayer);
+      newClientApps.gameInfoCards = newClient._id;
+      newClientApps.gameInfoChess = newClient._id;
+      newClientApps.gameInfoDomino = newClient._id;
       await newClientApps.save();
+
       return res.status(200).send({
         data: {
           message: "You've have registred succesfully",
@@ -64,22 +70,32 @@ exports.registration = async (req, res) => {
     const newUserId = newUser._id.toString();
 
     newUser.userId = newUserId;
+
     const innerInfoNewGame = {
       gameId,
       playerId,
       nickname,
       userId: newUserId,
+
     };
 
     const newClient = await createNewClient(gameId, innerInfoNewGame);
     await newClient.save();
 
     const newClientApps = new ClientsApps({
-      gameId, playerId, userId: newUserId, userTokenJWT, system, systemVersion,
+      gameId,
+      playerId,
+      userId: newUserId,
+      userTokenJWT,
+      system,
+      systemVersion,
+      gameInfoCards: newClient._id,
+      gameInfoChess: newClient._id,
+      gameInfoDomino: newClient._id,
     });
 
-    await newClientApps.save();
     await newUser.save();
+    await newClientApps.save();
 
     return res.status(200).send({
       data: {
@@ -87,6 +103,6 @@ exports.registration = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(500).send({ response: 'error', code: 0, message: 'bad serve' });
+    return res.status(500).send({ response: 'error', code: 0, message: err.message });
   }
 };
