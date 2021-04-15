@@ -24,4 +24,7 @@ router.post('/roundFinished',
 router.post('/fillBots',
   botAddController.fillBots);
 
+router.get('/leaderboard',
+  playerController.getLeaderboard);
+
 module.exports = router;

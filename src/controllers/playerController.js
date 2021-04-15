@@ -168,8 +168,61 @@ const updateStats = async (req, res) => {
   }
 };
 
+// get leaderboard and pos
+const getLeaderboard = async (req, res) => {
+  const { userId } = req.query;
+  const { usertokenjwt: userTokenJWT } = req.headers;
+
+  try {
+    const decoded = checkToken(res, userTokenJWT);
+
+    // const currentAccount = await ClientsApps.findOne({ userId });
+    // if (!currentAccount && currentAccount.userId.toString() !== userId) {
+    //   return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
+    // }
+
+    const { gameId } = decoded;
+    const StatsModel = await ChooseScoreModel(gameId);
+    let allGameStats = await StatsModel.find({});
+    let position;
+
+    allGameStats = allGameStats.sort((a, b) => {
+      if (a.score > b.score) {
+        return -1;
+      }
+      if (a.score < b.score) {
+        return 1;
+      }
+      return 0;
+    });
+
+    allGameStats.forEach((element, index) => {
+      if (element.userId.toString() === userId) {
+        position = index + 1;
+      }
+    });
+
+    const neighbourTop = allGameStats[position];
+    const neighbourBot = allGameStats[position - 2];
+
+    return res.status(200).send({
+      message: 'leaderboard!',
+      position: `your position ${position}`,
+      neighbourTop: `top member ${neighbourTop} ---- on position ${position + 1}`,
+      neighbourBot: `bot member ${neighbourBot} ---- on position ${position - 1}`,
+      allGameStats,
+    });
+  } catch (err) {
+    return res.status(500).send({
+      response: 'error',
+      message: err.message,
+    });
+  }
+};
+
 module.exports = {
   changeNickname,
   getInfoAboutUser,
   updateStats,
+  getLeaderboard,
 };
