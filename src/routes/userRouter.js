@@ -17,4 +17,7 @@ router.put('/changeNickname',
 router.get('/getInfo',
   playerController.getInfoAboutUser);
 
+router.post('/roundFinished',
+  playerController.updateStats);
+
 module.exports = router;
