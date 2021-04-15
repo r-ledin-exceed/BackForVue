@@ -20,13 +20,12 @@ const changeNickname = async (req, res) => {
     const decoded = checkToken(res, userTokenJWT);
 
     const currentAccount = await ClientsApps.findOne({ userTokenJWT });
-    if (!currentAccount && currentAccount.userId.toString() !== data.userId) {
+    if (!currentAccount || currentAccount.userId.toString() !== data.userId.toString()) {
       return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
     }
 
     const { gameId, deviceId } = decoded;
     const gameModel = await chooseModel(gameId);
-
     const currentUser = await gameModel.findOne({ userId: data.userId });
     const currentGlobalUser = await User.findOne({ deviceId });
 
@@ -64,7 +63,7 @@ const getInfoAboutUser = async (req, res) => {
     const decoded = checkToken(res, userTokenJWT);
 
     const currentAccount = await ClientsApps.findOne({ userTokenJWT });
-    if (!currentAccount && currentAccount.userId.toString() !== userId) {
+    if (!currentAccount || currentAccount.userId.toString() !== userId.toString()) {
       return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
     }
 
@@ -121,7 +120,7 @@ const updateStats = async (req, res) => {
       return res.status(400).send({ message: 'incorrect round stats' });
     }
     const currentAccount = await ClientsApps.findOne({ userTokenJWT });
-    if (!currentAccount && currentAccount.userId.toString() !== userId.toString()) {
+    if (!currentAccount || currentAccount.userId.toString() !== userId.toString()) {
       return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
     }
 
@@ -170,48 +169,111 @@ const updateStats = async (req, res) => {
 
 // get leaderboard and pos
 const getLeaderboard = async (req, res) => {
-  const { userId } = req.query;
+  const { userId, limit } = req.query;
   const { usertokenjwt: userTokenJWT } = req.headers;
 
   try {
     const decoded = checkToken(res, userTokenJWT);
-
-    // const currentAccount = await ClientsApps.findOne({ userId });
-    // if (!currentAccount && currentAccount.userId.toString() !== userId) {
-    //   return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
-    // }
+    const currentAccount = await ClientsApps.findOne({ userTokenJWT });
+    if (!currentAccount || currentAccount.userId.toString() !== userId.toString()) {
+      return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
+    }
 
     const { gameId } = decoded;
     const StatsModel = await ChooseScoreModel(gameId);
-    let allGameStats = await StatsModel.find({});
-    let position;
+    const topStats = await StatsModel.find({}).sort('-score').lean().limit(+limit);
+    // const temporary = [];
+    let counter = 1;
 
-    allGameStats = allGameStats.sort((a, b) => {
-      if (a.score > b.score) {
-        return -1;
+    const currentUserFinder = await StatsModel.find({ }).sort('-score').lean().cursor();
+
+    currentUserFinder.next('data', (doc) => {
+      console.log(doc.userId);
+      while (doc.userId.toString() !== userId.toString()) {
+        counter += 1;
+        console.log(counter);
       }
-      if (a.score < b.score) {
-        return 1;
-      }
-      return 0;
+      return counter;
     });
-
-    allGameStats.forEach((element, index) => {
-      if (element.userId.toString() === userId) {
-        position = index + 1;
-      }
-    });
-
-    const neighbourTop = allGameStats[position];
-    const neighbourBot = allGameStats[position - 2];
 
     return res.status(200).send({
-      message: 'leaderboard!',
-      position: `your position ${position}`,
-      neighbourTop: `top member ${neighbourTop} ---- on position ${position + 1}`,
-      neighbourBot: `bot member ${neighbourBot} ---- on position ${position - 1}`,
-      allGameStats,
+      // position,
+      counter,
+      message: '--------------',
+      topStats,
     });
+
+    // const currentUser = await StatsModel.findOne({ userId });
+    // console.log(currentUser);
+    // const checkerStats = await StatsModel.cursor();
+
+    // checkerStats.on('data', )
+
+    // allGameStats.on('data', (elem, index) => {
+    //   if (doc) {
+    //   stats.push(elem);
+    // })
+
+    // let position;
+    // let neighbourTop;
+    // let neighbourBot;
+    // let lastIndex;
+
+    // allGameStats = allGameStats.sort((a, b) => {
+    //   if (a.score > b.score) {
+    //     return -1;
+    //   }
+    //   if (a.score < b.score) {
+    //     return 1;
+    //   }
+    //   return 0;
+    // });
+
+    // allGameStats.forEach((element, index) => {
+    //   if (element.userId.toString() === userId) {
+    //     position = index + 1;
+    //     if (index !== 0) {
+    //       neighbourBot = element[index - 1];
+    //       neighbourTop = element[index + 1];
+    //     }
+    //   }
+    //   lastIndex = index;
+    // });
+    // const leaderboard = allGameStats;
+    // leaderboard.length = +limit;
+
+    // if ((position !== 1) && (position !== (lastIndex + 1)) && (position > 100)) {
+    //   return res.status(200).send({
+    //     message: 'leaderboard!',
+    //     position: `your position ${position}`,
+    //     neighbourTop,
+    //     neighbourBot,
+    //     leaderboard,
+    //   });
+    // }
+
+    // if (position === 1) {
+    //   return res.status(200).send({
+    //     message: 'leaderboard!',
+    //     position: `your position ${position}`,
+    //     leaderboard,
+    //   });
+    // }
+
+    // if (position === lastIndex + 1) {
+    //   return res.status(200).send({
+    //     message: 'leaderboard!',
+    //     position: `your position ${position}`,
+    //     neighbourTop,
+    //     leaderboard,
+    //   });
+    // }
+
+    // return res.status(200).send({
+    //   message: 'leaderboard!',
+    //   position: `your position ${position}`,
+    //   leaderboard,
+    // });
   } catch (err) {
     return res.status(500).send({
       response: 'error',
