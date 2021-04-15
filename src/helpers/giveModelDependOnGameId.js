@@ -26,9 +26,9 @@ const ChooseScoreModel = async (gameId) => {
     case 'domino':
       return StatsDomino;
     case 'cards':
-      return StatsChess;
-    case 'chess':
       return StatsCards;
+    case 'chess':
+      return StatsChess;
     default:
       break;
   }

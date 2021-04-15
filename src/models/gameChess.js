@@ -4,8 +4,8 @@ const { Schema } = mongoose;
 
 const GameChess = new Schema({
   userId: { type: Schema.ObjectId },
-  playerId: { type: String, required: true },
-  nickname: { type: String, required: true },
+  playerId: { type: String },
+  nickname: { type: String },
   lvl: { type: Number, default: 0 },
   balance: { type: Number, default: 0 },
   isOnline: { type: Boolean, default: false },
