@@ -171,7 +171,6 @@ const updateStats = async (req, res) => {
 const getLeaderboard = async (req, res) => {
   const { userId, limit } = req.query;
   const { usertokenjwt: userTokenJWT } = req.headers;
-
   try {
     const decoded = checkToken(res, userTokenJWT);
     const currentAccount = await ClientsApps.findOne({ userTokenJWT });
@@ -184,17 +183,24 @@ const getLeaderboard = async (req, res) => {
     const topStats = await StatsModel.find({}).sort('-score').lean().limit(+limit);
     // const temporary = [];
     let counter = 1;
+    const temporary = [];
 
-    const currentUserFinder = await StatsModel.find({ }).sort('-score').lean().cursor();
-
-    currentUserFinder.next('data', (doc) => {
-      console.log(doc.userId);
-      while (doc.userId.toString() !== userId.toString()) {
-        counter += 1;
-        console.log(counter);
+    const currentUserFinder = await StatsModel.find({ }).sort('-score').cursor();
+    currentUserFinder.next((error, doc) => {
+      while (temporary.length < 7000) {
+        temporary.push(doc);
       }
+      temporary.forEach((element) => {
+        if (element.userId.toString() !== userId.toString()) {
+          counter += 1;
+        }
+        temporary.length = 0;
+      });
+      
+      console.log(counter);
       return counter;
     });
+    // currentUserFinder.next('end', (doc) => console.log(counter));
 
     return res.status(200).send({
       // position,
