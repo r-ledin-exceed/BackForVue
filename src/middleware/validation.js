@@ -17,8 +17,8 @@ const test = async (body, res, next, rule) => {
 const addNewUser = async (req, res, next) => {
   const validationRule = {
     deviceId: 'required',
-    gameId: 'required',
-    nickname: 'required|min:3|max:12',
+    // gameId: 'required',
+    // nickname: 'required|min:3|max:12',
   };
   test(req.body, res, next, validationRule);
 };
