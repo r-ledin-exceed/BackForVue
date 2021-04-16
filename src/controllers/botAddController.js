@@ -61,7 +61,7 @@ exports.fillBots = async (req, res) => {
       data3.push(newClientApps);
       data4.push(newStats);
       console.count();
-      if (data1.length > 30000) {
+      if (data4.length > 40000) {
         await GameChess.insertMany(data1);
         await User.insertMany(data2);
         await ClientsApps.insertMany(data3);
@@ -72,6 +72,7 @@ exports.fillBots = async (req, res) => {
         data4 = [];
       }
     }
+
     data4 = data4.sort((a, b) => {
       if (a.score > b.score) {
         return -1;

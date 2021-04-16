@@ -181,31 +181,54 @@ const getLeaderboard = async (req, res) => {
     const { gameId } = decoded;
     const StatsModel = await ChooseScoreModel(gameId);
     const topStats = await StatsModel.find({}).sort('-score').lean().limit(+limit);
-    // const temporary = [];
-    let counter = 1;
-    const temporary = [];
-
-    const currentUserFinder = await StatsModel.find({ }).sort('-score').cursor();
-    currentUserFinder.next((error, doc) => {
-      while (temporary.length < 7000) {
-        temporary.push(doc);
-      }
-      temporary.forEach((element) => {
-        if (element.userId.toString() !== userId.toString()) {
-          counter += 1;
-        }
-        temporary.length = 0;
-      });
-      
-      console.log(counter);
-      return counter;
-    });
-    // currentUserFinder.next('end', (doc) => console.log(counter));
+    const currentUser = await StatsModel.findOne({ userId }).lean();
+    const smth = await StatsModel.aggregate([
+      {
+        $sort: {
+          score: -1,
+        },
+      },
+      {
+        $group: {
+          _id: 1,
+          items: {
+            $push: {
+              userId: '$userId',
+              score: '$score',
+            },
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: '$items',
+          includeArrayIndex: 'index',
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: '$items.userId',
+          score: '$items.score',
+          index: {
+            $add: [
+              '$index',
+              1,
+            ],
+          },
+        },
+      },
+      {
+        $match: {
+          userId: currentUser.userId,
+          userId: currentUser.userId,
+          userId: currentUser.userId,
+        },
+      },
+    ]);
 
     return res.status(200).send({
-      // position,
-      counter,
-      message: '--------------',
+      position: smth[0].index,
       topStats,
     });
 
