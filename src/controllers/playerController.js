@@ -182,7 +182,8 @@ const getLeaderboard = async (req, res) => {
     const StatsModel = await ChooseScoreModel(gameId);
     const topStats = await StatsModel.find({}).sort('-score').lean().limit(+limit);
     const currentUser = await StatsModel.findOne({ userId }).lean();
-    const smth = await StatsModel.aggregate([
+
+    const currentUserPos = await StatsModel.aggregate([
       {
         $sort: {
           score: -1,
@@ -221,88 +222,65 @@ const getLeaderboard = async (req, res) => {
       {
         $match: {
           userId: currentUser.userId,
-          userId: currentUser.userId,
-          userId: currentUser.userId,
         },
       },
     ]);
 
+    const neighbours = await StatsModel.aggregate([
+      {
+        $sort: {
+          score: -1,
+        },
+      },
+      {
+        $group: {
+          _id: 1,
+          items: {
+            $push: {
+              userId: '$userId',
+              score: '$score',
+            },
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: '$items',
+          includeArrayIndex: 'index',
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: '$items.userId',
+          score: '$items.score',
+          index: {
+            $add: [
+              '$index',
+              1,
+            ],
+          },
+        },
+      },
+      {
+        $match: {
+          $or: [{ index: currentUserPos[0].index + 1 },
+            { index: currentUserPos[0].index - 1 }],
+        },
+      },
+    ]);
+
+    if (currentUserPos[0].index < limit) {
+      return res.status(200).send({
+        currentUserPos,
+        topStats,
+      });
+    }
     return res.status(200).send({
-      position: smth[0].index,
+      neighbours,
+      currentUserPos,
       topStats,
     });
-
-    // const currentUser = await StatsModel.findOne({ userId });
-    // console.log(currentUser);
-    // const checkerStats = await StatsModel.cursor();
-
-    // checkerStats.on('data', )
-
-    // allGameStats.on('data', (elem, index) => {
-    //   if (doc) {
-    //   stats.push(elem);
-    // })
-
-    // let position;
-    // let neighbourTop;
-    // let neighbourBot;
-    // let lastIndex;
-
-    // allGameStats = allGameStats.sort((a, b) => {
-    //   if (a.score > b.score) {
-    //     return -1;
-    //   }
-    //   if (a.score < b.score) {
-    //     return 1;
-    //   }
-    //   return 0;
-    // });
-
-    // allGameStats.forEach((element, index) => {
-    //   if (element.userId.toString() === userId) {
-    //     position = index + 1;
-    //     if (index !== 0) {
-    //       neighbourBot = element[index - 1];
-    //       neighbourTop = element[index + 1];
-    //     }
-    //   }
-    //   lastIndex = index;
-    // });
-    // const leaderboard = allGameStats;
-    // leaderboard.length = +limit;
-
-    // if ((position !== 1) && (position !== (lastIndex + 1)) && (position > 100)) {
-    //   return res.status(200).send({
-    //     message: 'leaderboard!',
-    //     position: `your position ${position}`,
-    //     neighbourTop,
-    //     neighbourBot,
-    //     leaderboard,
-    //   });
-    // }
-
-    // if (position === 1) {
-    //   return res.status(200).send({
-    //     message: 'leaderboard!',
-    //     position: `your position ${position}`,
-    //     leaderboard,
-    //   });
-    // }
-
-    // if (position === lastIndex + 1) {
-    //   return res.status(200).send({
-    //     message: 'leaderboard!',
-    //     position: `your position ${position}`,
-    //     neighbourTop,
-    //     leaderboard,
-    //   });
-    // }
-
-    // return res.status(200).send({
-    //   message: 'leaderboard!',
-    //   position: `your position ${position}`,
-    //   leaderboard,
-    // });
   } catch (err) {
     return res.status(500).send({
       response: 'error',
