@@ -20,13 +20,12 @@ const changeNickname = async (req, res) => {
     const decoded = checkToken(res, userTokenJWT);
 
     const currentAccount = await ClientsApps.findOne({ userTokenJWT });
-    if (!currentAccount && currentAccount.userId.toString() !== data.userId) {
+    if (!currentAccount || currentAccount.userId.toString() !== data.userId.toString()) {
       return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
     }
 
     const { gameId, deviceId } = decoded;
     const gameModel = await chooseModel(gameId);
-
     const currentUser = await gameModel.findOne({ userId: data.userId });
     const currentGlobalUser = await User.findOne({ deviceId });
 
@@ -64,7 +63,7 @@ const getInfoAboutUser = async (req, res) => {
     const decoded = checkToken(res, userTokenJWT);
 
     const currentAccount = await ClientsApps.findOne({ userTokenJWT });
-    if (!currentAccount && currentAccount.userId.toString() !== userId) {
+    if (!currentAccount || currentAccount.userId.toString() !== userId.toString()) {
       return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
     }
 
@@ -121,7 +120,7 @@ const updateStats = async (req, res) => {
       return res.status(400).send({ message: 'incorrect round stats' });
     }
     const currentAccount = await ClientsApps.findOne({ userTokenJWT });
-    if (!currentAccount && currentAccount.userId.toString() !== userId.toString()) {
+    if (!currentAccount || currentAccount.userId.toString() !== userId.toString()) {
       return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
     }
 
@@ -168,8 +167,131 @@ const updateStats = async (req, res) => {
   }
 };
 
+// get leaderboard and pos
+const getLeaderboard = async (req, res) => {
+  const { userId, limit } = req.query;
+  const { usertokenjwt: userTokenJWT } = req.headers;
+  try {
+    const decoded = checkToken(res, userTokenJWT);
+    const currentAccount = await ClientsApps.findOne({ userTokenJWT });
+    if (!currentAccount || currentAccount.userId.toString() !== userId.toString()) {
+      return res.status(400).send({ response: 'error', message: 'Cannot find that userId' });
+    }
+
+    const { gameId } = decoded;
+    const StatsModel = await ChooseScoreModel(gameId);
+    const topStats = await StatsModel.find({}).sort('-score').lean().limit(+limit);
+    const currentUser = await StatsModel.findOne({ userId }).lean();
+
+    const currentUserPos = await StatsModel.aggregate([
+      {
+        $sort: {
+          score: -1,
+        },
+      },
+      {
+        $group: {
+          _id: 1,
+          items: {
+            $push: {
+              userId: '$userId',
+              score: '$score',
+            },
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: '$items',
+          includeArrayIndex: 'index',
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: '$items.userId',
+          score: '$items.score',
+          index: {
+            $add: [
+              '$index',
+              1,
+            ],
+          },
+        },
+      },
+      {
+        $match: {
+          userId: currentUser.userId,
+        },
+      },
+    ]);
+
+    const neighbours = await StatsModel.aggregate([
+      {
+        $sort: {
+          score: -1,
+        },
+      },
+      {
+        $group: {
+          _id: 1,
+          items: {
+            $push: {
+              userId: '$userId',
+              score: '$score',
+            },
+          },
+        },
+      },
+      {
+        $unwind: {
+          path: '$items',
+          includeArrayIndex: 'index',
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: '$items.userId',
+          score: '$items.score',
+          index: {
+            $add: [
+              '$index',
+              1,
+            ],
+          },
+        },
+      },
+      {
+        $match: {
+          $or: [{ index: currentUserPos[0].index + 1 },
+            { index: currentUserPos[0].index - 1 }],
+        },
+      },
+    ]);
+
+    if (currentUserPos[0].index < limit) {
+      return res.status(200).send({
+        currentUserPos,
+        topStats,
+      });
+    }
+    return res.status(200).send({
+      neighbours,
+      currentUserPos,
+      topStats,
+    });
+  } catch (err) {
+    return res.status(500).send({
+      response: 'error',
+      message: err.message,
+    });
+  }
+};
+
 module.exports = {
   changeNickname,
   getInfoAboutUser,
   updateStats,
+  getLeaderboard,
 };

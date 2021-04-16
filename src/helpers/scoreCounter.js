@@ -1,4 +1,4 @@
-const { cardsPoints, chessPoints, dominoPoints } = require('../CONST_GAMESCORE');
+const { cardsPoints, chessPoints, dominoPoints } = require('../CONSTATS/CONST_GAMESCORE');
 
 const scoreCounter = (gameId, gameType, winRounds, allRounds, res) => {
   let finalScore;
